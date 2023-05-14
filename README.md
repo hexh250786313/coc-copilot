@@ -1,5 +1,3 @@
-[中文文档](https://blog.hexuhua.vercel.app/post/30)
-
 # @hexuhua/coc-copilot
 
 ![20230514_161921](https://github.com/hexh250786313/coc-copilot/assets/26080416/b3b2405c-7589-4030-95e8-ae88e9855df7)
