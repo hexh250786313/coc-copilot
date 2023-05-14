@@ -46,8 +46,6 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   const preselect = configuration.get<boolean>('enablePreselect', true)
   const shortcut = configuration.get('shortcut', 'Cop')
 
-  console.log({ isEnable, kindLabel, priority, preselect, limit })
-
   if (!isEnable) {
     return
   }
