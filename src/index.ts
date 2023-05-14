@@ -40,10 +40,13 @@ function isPositionNotSame(
 export const activate = async (context: ExtensionContext): Promise<void> => {
   const configuration = workspace.getConfiguration('copilot')
   const isEnable = configuration.get('enable', true)
-  const kindLabel = configuration.get('copilot.kindLabel', ' ')
-  const priority = configuration.get('copilot.priority', 1000)
-  const limit = configuration.get<number>('copilot.limit', 10)
-  const preselect = configuration.get<boolean>('copilot.enablePreselect', true)
+  const kindLabel = configuration.get('kindLabel', ' ')
+  const priority = configuration.get('priority', 1000)
+  const limit = configuration.get<number>('limit', 10)
+  const preselect = configuration.get<boolean>('enablePreselect', true)
+  const shortcut = configuration.get('shortcut', 'Cop')
+
+  console.log({ isEnable, kindLabel, priority, preselect, limit })
 
   if (!isEnable) {
     return
@@ -113,7 +116,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   context.subscriptions.push(
     languages.registerCompletionItemProvider(
       'copilot', // name
-      configuration.get('shortcut', 'Cop'), // shortcut
+      shortcut, // shortcut
       null, // selector / filetypes
       languageProvider, // provider
       [], // triggerCharacters
