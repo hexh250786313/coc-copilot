@@ -2,7 +2,7 @@
 
 # @hexuhua/coc-copilot
 
-![@hexuhua/coc-copilot](https://github.com/hexh250786313/coc-copilot/assets/26080416/446971eb-f112-4495-8874-87e2d1a47fb4)
+![20230514_161921](https://github.com/hexh250786313/coc-copilot/assets/26080416/b3b2405c-7589-4030-95e8-ae88e9855df7)
 
 **@hexuhua/coc-copilot** is a [coc.nvim](https://github.com/neoclide/coc.nvim) extension that integrates with GitHub's [copilot.vim](https://github.com/github/copilot.vim) to provide AI-powered code completions for your projects.
 
