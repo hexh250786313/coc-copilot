@@ -1,0 +1,61 @@
+{
+  "name": "@hexuhua/coc-copilot",
+  "version": "0.0.2",
+  "description": "copilot.vim completion source integration of coc.nvim",
+  "main": "lib/index.js",
+  "engines": {
+    "coc": "^0.0.82"
+  },
+  "keywords": [
+    "coc",
+    "coc.nvim",
+    "copilot"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "scripts": {
+    "release": "git checkout master -- ./README.md && cp ./build/index.js ./lib && rm -rf ./build"
+  },
+  "repository": "git@github.com:hexh250786313/coc-copilot.git",
+  "author": "hexh <250786313@qq.com>",
+  "license": "MIT",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "coc-copilot configuration",
+      "properties": {
+        "copilot.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable coc-copilot extension"
+        },
+        "copilot.kindLabel": {
+          "type": "string",
+          "default": " ",
+          "description": "Copilot kind label"
+        },
+        "copilot.priority": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Copilot source priority"
+        },
+        "copilot.limit": {
+          "type": "integer",
+          "default": 10,
+          "description": "Copilot source limit"
+        },
+        "copilot.enablePreselect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable copilot preselect"
+        },
+        "copilot.shortcut": {
+          "type": "string",
+          "default": "Cop",
+          "description": "Copilot shortcut"
+        }
+      }
+    }
+  }
+}

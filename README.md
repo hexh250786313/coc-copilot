@@ -1,1 +1,40 @@
-# coc-copilot
+[中文文档](https://blog.hexuhua.vercel.app/post/30)
+
+# @hexuhua/coc-copilot
+
+![@hexuhua/coc-copilot](https://github.com/hexh250786313/coc-copilot/assets/26080416/446971eb-f112-4495-8874-87e2d1a47fb4)
+
+**@hexuhua/coc-copilot** is a [coc.nvim](https://github.com/neoclide/coc.nvim) extension that integrates with GitHub's [copilot.vim](https://github.com/github/copilot.vim) to provide AI-powered code completions for your projects.
+
+**_Note_**: There is another plugin called coc-copilot: https://github.com/yuki-yano/coc-copilot, but that repository is no longer maintained by the author. This is a different plugin. Make sure to install it using `@hexuhua/coc-copilot` and not `coc-copilot`.
+
+## Features
+
+- Fetches code completions from [copilot.vim](https://github.com/github/copilot.vim).
+- Integrates with [coc.nvim](https://github.com/neoclide/coc.nvim)'s completion system.
+- Customizable source priority, label, and limit.
+
+## Installation
+
+Make sure you have [coc.nvim](https://github.com/neoclide/coc.nvim) and [copilot.vim](https://github.com/github/copilot.vim) installed and configured.
+
+Then, install `@hexuhua/coc-copilot` using:
+
+```
+:CocInstall @hexuhua/coc-copilot
+```
+
+## Configuration
+
+Here are the available configuration options for coc-copilot:
+
+- `copilot.enable`: (Boolean, default: `true`) Enable or disable the coc-copilot extension.
+- `copilot.priority`: (Integer, default: `1000`) The priority of Copilot completion items compared to other completion sources.
+- `copilot.limit`: (Integer, default: `10`) The maximum number of completion items fetched from Copilot.
+- `copilot.enablePreselect`: (Boolean, default: `true`) Enable or disable preselecting Copilot completion items.
+- `copilot.kindLabel`: (String, default: `" "`) The label used for Copilot completions in the completion menu.
+- `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
+
+## License
+
+MIT License.
