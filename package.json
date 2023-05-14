@@ -1,5 +1,5 @@
 {
-  "name": "coc-copilot",
+  "name": "@hexuhua/coc-copilot",
   "version": "0.0.0-dev",
   "description": "",
   "main": "build/index.js",
@@ -35,7 +35,6 @@
   "license": "MIT",
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.2",
-    "@types/fs-extra": "^11.0.1",
     "@types/node": "^20.1.3",
     "@typescript-eslint/eslint-plugin": "^5.59.5",
     "@typescript-eslint/parser": "^5.59.5",
@@ -47,17 +46,47 @@
     "lint-staged": "^13.2.2",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.0",
-    "coc.nvim": "^0.0.82",
-    "fs-extra": "^11.1.1",
-    "typescript": "^5.0.4",
-    "vscode-uri": "^3.0.7"
+    "typescript": "^5.0.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "coc.nvim": "^0.0.82"
+  },
   "contributes": {
     "configuration": {
       "type": "object",
       "title": "coc-copilot configuration",
-      "properties": {}
+      "properties": {
+        "copilot.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable coc-copilot extension"
+        },
+        "copilot.kindLabel": {
+          "type": "string",
+          "default": " ",
+          "description": "Copilot kind label"
+        },
+        "copilot.priority": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Copilot source priority"
+        },
+        "copilot.limit": {
+          "type": "integer",
+          "default": 10,
+          "description": "Copilot source limit"
+        },
+        "copilot.enablePreselect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable copilot preselect"
+        },
+        "copilot.shortcut": {
+          "type": "string",
+          "default": "Cop",
+          "description": "Copilot shortcut"
+        }
+      }
     }
   }
 }
