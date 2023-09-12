@@ -37,6 +37,33 @@ function isPositionNotSame(
   )
 }
 
+/** 轮询获取变量，直到获取到为止或者5秒后为止 */
+function getSuggestions(buffer: any): Promise<Copilot['suggestions'] | null> {
+  return new Promise((resolve) => {
+    buffer.getVar('_copilot').then((copilot: Copilot | null) => {
+      if (Array.isArray(copilot?.suggestions)) {
+        resolve(copilot!.suggestions)
+      } else {
+        let timer: NodeJS.Timeout | null = null
+        const timeout = setTimeout(() => {
+          clearInterval(timer!)
+          resolve([])
+        }, 5000)
+
+        timer = setInterval(async () => {
+          const copilot = (await buffer.getVar('_copilot')) as Copilot | null
+
+          if (Array.isArray(copilot?.suggestions)) {
+            clearTimeout(timeout)
+            clearInterval(timer!)
+            resolve(copilot!.suggestions)
+          }
+        }, 50)
+      }
+    })
+  })
+}
+
 export const activate = async (context: ExtensionContext): Promise<void> => {
   const configuration = workspace.getConfiguration('copilot')
   const isEnable = configuration.get('enable', true)
@@ -67,14 +94,16 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
       if (option) {
         const buffer = workspace.nvim.createBuffer(option.bufnr)
-        const copilot = (await buffer.getVar('_copilot')) as Copilot | null
 
-        if (!copilot?.suggestions) {
+        const suggestions = await getSuggestions(buffer)
+
+        if (!suggestions) {
           return null
         }
+
         const input = option.input
 
-        copilot.suggestions.forEach(({ range, text }) => {
+        suggestions.forEach(({ range, text }) => {
           const start: Position = {
             line: range.start.line,
             character: range.start.character,
