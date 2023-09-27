@@ -37,28 +37,35 @@ function isPositionNotSame(
   )
 }
 
-/** 轮询获取变量，直到获取到为止或者5秒后为止 */
-function getSuggestions(buffer: any): Promise<Copilot['suggestions'] | null> {
+/** Polling to get variables until you get them or 5 seconds later */
+function getSuggestions(
+  buffer: any,
+  autoUpdateCompletion: boolean
+): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
     buffer.getVar('_copilot').then((copilot: Copilot | null) => {
       if (Array.isArray(copilot?.suggestions)) {
         resolve(copilot!.suggestions)
       } else {
-        let timer: NodeJS.Timeout | null = null
-        const timeout = setTimeout(() => {
-          clearInterval(timer!)
-          resolve([])
-        }, 5000)
-
-        timer = setInterval(async () => {
-          const copilot = (await buffer.getVar('_copilot')) as Copilot | null
-
-          if (Array.isArray(copilot?.suggestions)) {
-            clearTimeout(timeout)
+        if (autoUpdateCompletion) {
+          let timer: NodeJS.Timeout | null = null
+          const timeout = setTimeout(() => {
             clearInterval(timer!)
-            resolve(copilot!.suggestions)
-          }
-        }, 50)
+            resolve([])
+          }, 5000)
+
+          timer = setInterval(async () => {
+            const copilot = (await buffer.getVar('_copilot')) as Copilot | null
+
+            if (Array.isArray(copilot?.suggestions)) {
+              clearTimeout(timeout)
+              clearInterval(timer!)
+              resolve(copilot!.suggestions)
+            }
+          }, 50)
+        } else {
+          return resolve(null)
+        }
       }
     })
   })
@@ -72,6 +79,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   const limit = configuration.get<number>('limit', 10)
   const preselect = configuration.get<boolean>('enablePreselect', true)
   const shortcut = configuration.get('shortcut', 'Cop')
+  const autoUpdateCompletion = configuration.get('autoUpdateCompletion', false)
 
   if (!isEnable) {
     return
@@ -95,7 +103,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
       if (option) {
         const buffer = workspace.nvim.createBuffer(option.bufnr)
 
-        const suggestions = await getSuggestions(buffer)
+        const suggestions = await getSuggestions(buffer, autoUpdateCompletion)
 
         if (!suggestions) {
           return null
