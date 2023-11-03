@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -54,6 +54,11 @@
           "type": "string",
           "default": "Cop",
           "description": "Copilot shortcut"
+        },
+        "copilot.autoUpdateCompletion": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to update the completion panel automatically when the copilot result is updated. Caution: Sometimes it will cause the completion panel to stall, it is recommended to set it to false"
         }
       }
     }
