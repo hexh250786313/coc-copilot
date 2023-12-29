@@ -88,7 +88,7 @@
         },
         "copilot.autoUpdateCompletion": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Whether to update the completion panel automatically when the copilot result is updated. Caution: Sometimes it will cause the completion panel to stall, it is recommended to set it to false"
         }
       }

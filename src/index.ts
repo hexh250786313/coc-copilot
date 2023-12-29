@@ -57,12 +57,15 @@ function getSuggestions(
           timer = setInterval(async () => {
             const copilot = (await buffer.getVar('_copilot')) as Copilot | null
 
-            if (Array.isArray(copilot?.suggestions)) {
+            if (
+              Array.isArray(copilot?.suggestions) &&
+              copilot?.suggestions?.length
+            ) {
               clearTimeout(timeout)
               clearInterval(timer!)
               resolve(copilot!.suggestions)
             }
-          }, 50)
+          }, 500)
         } else {
           return resolve(null)
         }
@@ -79,7 +82,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   const limit = configuration.get<number>('limit', 10)
   const preselect = configuration.get<boolean>('enablePreselect', true)
   const shortcut = configuration.get('shortcut', 'Cop')
-  const autoUpdateCompletion = configuration.get('autoUpdateCompletion', false)
+  const autoUpdateCompletion = configuration.get('autoUpdateCompletion', true)
 
   if (!isEnable) {
     return
@@ -105,7 +108,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
         const suggestions = await getSuggestions(buffer, autoUpdateCompletion)
 
-        if (!suggestions) {
+        if (!suggestions || suggestions.length === 0) {
           return null
         }
 
@@ -127,7 +130,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
                 }
 
           results.push({
-            label: text,
+            label: text.replace(/\n/g, '↵'),
             kind: kindLabel as any,
             detail: '',
             documentation: {
