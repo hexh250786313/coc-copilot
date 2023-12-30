@@ -32,7 +32,11 @@ Here are the available configuration options for coc-copilot:
 - `copilot.enablePreselect`: (Boolean, default: `true`) Enable or disable preselecting Copilot completion items.
 - `copilot.kindLabel`: (String, default: `" "`) The label used for Copilot completions in the completion menu.
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
-- `copilot.autoUpdateCompletion`: (Boolean, default: `false`) Whether to update the completion panel automatically when the copilot result is updated. **_Caution_**: Sometimes it will cause the completion panel to stall, it is recommended to set it to `false`.
+- `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
+
+## Known Issues
+
+- The plugin cannot refresh completion suggestions when deleting characters after an existing completion: https://github.com/neoclide/coc.nvim/issues/1616#issuecomment-1105012094
 
 ## License
 
