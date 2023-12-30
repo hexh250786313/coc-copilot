@@ -144,7 +144,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
         completionList = {
           items: results.slice(0, limit),
-          isIncomplete: input.length <= 3,
+          isIncomplete: true,
         }
       }
       return completionList
