@@ -44,7 +44,7 @@ function getSuggestions(
 ): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
     buffer.getVar('_copilot').then((copilot: Copilot | null) => {
-      if (Array.isArray(copilot?.suggestions)) {
+      if (Array.isArray(copilot?.suggestions) && copilot?.suggestions?.length) {
         resolve(copilot!.suggestions)
       } else {
         if (autoUpdateCompletion) {
