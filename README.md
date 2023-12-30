@@ -34,10 +34,6 @@ Here are the available configuration options for coc-copilot:
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
 - `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
 
-## Known Issues
-
-- The plugin cannot refresh completion suggestions when deleting characters after an existing completion: https://github.com/neoclide/coc.nvim/issues/1616#issuecomment-1105012094
-
 ## License
 
 MIT License.
