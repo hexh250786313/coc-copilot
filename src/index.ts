@@ -115,19 +115,42 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
         const input = option.input
 
         suggestions.forEach(({ range, text }) => {
-          const start: Position = {
-            line: range.start.line,
-            character: range.start.character,
-          }
-          const end: Position =
-            // copilot return wrong end range when input is empty sometimes
-            // in this case, coc wouldn't update completion list correctly
-            input.length === 0 && isPositionNotSame(position, range)
-              ? position
-              : {
-                  line: range.end.line,
-                  character: range.end.character,
-                }
+          const currentPosition: Position = _document.positionAt(
+            _document.offsetAt(position)
+          )
+          // copilot 的原理是获取一整行，它会从光标行所在行的第一列开始替换
+          // 获得当前偏移量：
+          const offset = currentPosition.character - range.start.character
+          // 不以 copilot 的 range 为准，以当前光标位置为准
+          const start = currentPosition
+          // 获得当前光标前的文本
+          const textBeforeCursor = _document.getText({
+            start: { line: currentPosition.line, character: 0 },
+            end: currentPosition,
+          })
+          // 如果全是空格，那么就不需要替换
+          const needReplaceText = textBeforeCursor.replace(/\s/g, '').length > 0
+
+          const displayText = text.replace(new RegExp(`^ +`), '')
+
+          // 移除开头连续的 offset 个字符
+          text =
+            needReplaceText && input.length === 0
+              ? text.replace(new RegExp(`^.{${offset}}`), '')
+              : text
+
+          const end: Position = range.end
+
+          console.log({
+            start: range.start,
+            end: range.end,
+            currentPosition,
+            position,
+            input,
+            text,
+            offset,
+            textBeforeCursor,
+          })
 
           results.push({
             label: text.replace(/\n/g, '↵'),
@@ -135,7 +158,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
             detail: '',
             documentation: {
               kind: MarkupKind.Markdown,
-              value: `\`\`\`${filetype}\n${text}\n\`\`\``,
+              value: `\`\`\`${filetype}\n${displayText}\n\`\`\``,
             },
             textEdit: TextEdit.replace(Range.create(start, end), text),
             preselect,
