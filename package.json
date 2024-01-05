@@ -90,6 +90,17 @@
           "type": "boolean",
           "default": true,
           "description": "Whether to update the completion panel automatically when the copilot result is updated"
+        },
+        "copilot.triggerCharacters": {
+          "type": "array",
+          "default": [
+            ".",
+            "/",
+            "@",
+            " ",
+            "*"
+          ],
+          "description": "The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`)"
         }
       }
     }

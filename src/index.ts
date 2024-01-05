@@ -27,48 +27,58 @@ type Copilot = {
   }>
 }
 
-function isPositionNotSame(
-  position: Position,
-  range: { start: Position; end: Position }
-): boolean {
-  return (
-    position.line !== range.end.line ||
-    position.character !== range.end.character
-  )
+let previousIds: string[] = []
+
+function hasNewIds(suggestions: Copilot['suggestions']) {
+  const ids = suggestions.map((suggestion) => suggestion.uuid)
+  return ids.some((id) => !previousIds.includes(id))
+}
+
+function isMatch(input: string, suggestions: Copilot['suggestions']) {
+  const displayText = suggestions[0].displayText
+  const text = suggestions[0].text
+  return displayText + input === text
 }
 
 /** Polling to get variables until you get them or 5 seconds later */
 function getSuggestions(
   buffer: any,
-  autoUpdateCompletion: boolean
+  autoUpdateCompletion: boolean,
+  input: string
 ): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
     buffer.getVar('_copilot').then((copilot: Copilot | null) => {
-      if (Array.isArray(copilot?.suggestions) && copilot?.suggestions?.length) {
+      if (
+        Array.isArray(copilot?.suggestions) &&
+        copilot?.suggestions?.length &&
+        hasNewIds(copilot.suggestions) && // if exist new uuid, then update
+        isMatch(input, copilot.suggestions)
+      ) {
         resolve(copilot!.suggestions)
-      } else {
-        if (autoUpdateCompletion) {
-          let timer: NodeJS.Timeout | null = null
-          const timeout = setTimeout(() => {
+        return
+      }
+      // if not exist new uuid, then polling
+      if (autoUpdateCompletion) {
+        let timer: NodeJS.Timeout | null = null
+        const timeout = setTimeout(() => {
+          clearInterval(timer!)
+          resolve([])
+        }, 5000)
+
+        timer = setInterval(async () => {
+          const copilot = (await buffer.getVar('_copilot')) as Copilot | null
+
+          if (
+            Array.isArray(copilot?.suggestions) &&
+            copilot?.suggestions?.length
+          ) {
+            clearTimeout(timeout)
             clearInterval(timer!)
-            resolve([])
-          }, 5000)
-
-          timer = setInterval(async () => {
-            const copilot = (await buffer.getVar('_copilot')) as Copilot | null
-
-            if (
-              Array.isArray(copilot?.suggestions) &&
-              copilot?.suggestions?.length
-            ) {
-              clearTimeout(timeout)
-              clearInterval(timer!)
-              resolve(copilot!.suggestions)
-            }
-          }, 500)
-        } else {
-          return resolve(null)
-        }
+            resolve(copilot!.suggestions)
+          }
+        }, 500)
+      } else {
+        return resolve(null)
       }
     })
   })
@@ -83,6 +93,13 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   const preselect = configuration.get<boolean>('enablePreselect', true)
   const shortcut = configuration.get('shortcut', 'Cop')
   const autoUpdateCompletion = configuration.get('autoUpdateCompletion', true)
+  const triggerCharacters = configuration.get('triggerCharacters', [
+    '.',
+    '/',
+    '@',
+    ' ',
+    '*',
+  ])
 
   if (!isEnable) {
     return
@@ -105,29 +122,59 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
       if (option) {
         const buffer = workspace.nvim.createBuffer(option.bufnr)
+        const input = option.input
 
-        const suggestions = await getSuggestions(buffer, autoUpdateCompletion)
+        const suggestions = await getSuggestions(
+          buffer,
+          autoUpdateCompletion,
+          input
+        )
 
         if (!suggestions || suggestions.length === 0) {
           return null
         }
 
-        const input = option.input
+        previousIds = suggestions.map((suggestion) => suggestion.uuid)
+
+        const noInput = input.length === 0
 
         suggestions.forEach(({ range, text }) => {
-          const start: Position = {
-            line: range.start.line,
-            character: range.start.character,
+          const currentPosition: Position = _document.positionAt(
+            _document.offsetAt(position)
+          )
+          // The principle of copilot is to get a whole line, and it will start replacing from the first column of the line where the cursor line is located
+          // Get the current offset:
+          const offset = currentPosition.character - range.start.character
+          // Get all text after the current cursor
+          const textAfterCursor = _document.getText({
+            start: currentPosition,
+            end: { line: currentPosition.line, character: 9999 },
+          })
+          // Get all text before the current cursor
+          const textBeforeCursor = _document.getText({
+            start: { line: currentPosition.line, character: 0 },
+            end: currentPosition,
+          })
+          // If it is all spaces, then no replacement is required
+          const needReplaceText = textBeforeCursor.replace(/\s/g, '').length > 0
+          // Whether it is multiline text
+          const isMultiline = text.includes('\n')
+          // Do not take the range of copilot as the standard, take the current cursor position as the standard
+          const start = noInput ? currentPosition : range.start
+          const end: Position = {
+            line: range.end.line,
+            character: isMultiline
+              ? range.end.character + textAfterCursor.length
+              : range.end.character,
           }
-          const end: Position =
-            // copilot return wrong end range when input is empty sometimes
-            // in this case, coc wouldn't update completion list correctly
-            input.length === 0 && isPositionNotSame(position, range)
-              ? position
-              : {
-                  line: range.end.line,
-                  character: range.end.character,
-                }
+
+          const displayText = text.replace(new RegExp(`^ +`), '')
+
+          // Remove the first offset characters
+          text =
+            needReplaceText && noInput
+              ? text.replace(new RegExp(`^.{${offset}}`), '')
+              : text
 
           results.push({
             label: text.replace(/\n/g, '↵'),
@@ -135,7 +182,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
             detail: '',
             documentation: {
               kind: MarkupKind.Markdown,
-              value: `\`\`\`${filetype}\n${text}\n\`\`\``,
+              value: `\`\`\`${filetype}\n${displayText}\n\`\`\``,
             },
             textEdit: TextEdit.replace(Range.create(start, end), text),
             preselect,
@@ -157,7 +204,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
       shortcut, // shortcut
       null, // selector / filetypes
       languageProvider, // provider
-      [], // triggerCharacters
+      triggerCharacters, // triggerCharacters
       priority // priority,
       // allCommitCharacters: string[]
     )
