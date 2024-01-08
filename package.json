@@ -96,7 +96,9 @@
           "default": [
             ".",
             "/",
-            "@"
+            "@",
+            " ",
+            "*"
           ],
           "description": "The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`)"
         }

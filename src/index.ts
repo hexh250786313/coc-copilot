@@ -87,6 +87,8 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
     '.',
     '/',
     '@',
+    ' ',
+    '*',
   ])
 
   if (!isEnable) {

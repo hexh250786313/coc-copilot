@@ -33,7 +33,7 @@ Here are the available configuration options for coc-copilot:
 - `copilot.kindLabel`: (String, default: `" "`) The label used for Copilot completions in the completion menu.
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
 - `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
-- `copilot.triggerCharacters`: (Array, default: `[".", "@", "/"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
+- `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", " ", "*"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
 
 ## License
 
