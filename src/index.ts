@@ -83,6 +83,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   const preselect = configuration.get<boolean>('enablePreselect', true)
   const shortcut = configuration.get('shortcut', 'Cop')
   const autoUpdateCompletion = configuration.get('autoUpdateCompletion', true)
+  const triggerCharacters = configuration.get('triggerCharacters', [])
 
   if (!isEnable) {
     return
@@ -180,7 +181,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
       shortcut, // shortcut
       null, // selector / filetypes
       languageProvider, // provider
-      [], // triggerCharacters
+      triggerCharacters, // triggerCharacters
       priority // priority,
       // allCommitCharacters: string[]
     )
