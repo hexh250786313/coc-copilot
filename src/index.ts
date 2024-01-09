@@ -29,13 +29,11 @@ type Copilot = {
 
 let previousIds: string[] = []
 
-/** 是否存在新的 uuid */
 function hasNewIds(suggestions: Copilot['suggestions']) {
   const ids = suggestions.map((suggestion) => suggestion.uuid)
   return ids.some((id) => !previousIds.includes(id))
 }
 
-/** 结果是否匹配 input */
 function isMatch(input: string, suggestions: Copilot['suggestions']) {
   const displayText = suggestions[0].displayText
   const text = suggestions[0].text
@@ -53,13 +51,13 @@ function getSuggestions(
       if (
         Array.isArray(copilot?.suggestions) &&
         copilot?.suggestions?.length &&
-        hasNewIds(copilot.suggestions) && // 如果存在新的 uuid，那么就更新
+        hasNewIds(copilot.suggestions) && // if exist new uuid, then update
         isMatch(input, copilot.suggestions)
       ) {
         resolve(copilot!.suggestions)
         return
       }
-      // 如果不存在新的 uuid，那么轮询查询
+      // if not exist new uuid, then polling
       if (autoUpdateCompletion) {
         let timer: NodeJS.Timeout | null = null
         const timeout = setTimeout(() => {
@@ -73,7 +71,6 @@ function getSuggestions(
           if (
             Array.isArray(copilot?.suggestions) &&
             copilot?.suggestions?.length
-            // isMatch(input, copilot.suggestions)
           ) {
             clearTimeout(timeout)
             clearInterval(timer!)
@@ -145,24 +142,24 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           const currentPosition: Position = _document.positionAt(
             _document.offsetAt(position)
           )
-          // copilot 的原理是获取一整行，它会从光标行所在行的第一列开始替换
-          // 获得当前偏移量：
+          // The principle of copilot is to get a whole line, and it will start replacing from the first column of the line where the cursor line is located
+          // Get the current offset:
           const offset = currentPosition.character - range.start.character
-          // 获取当前光标后的所有文本
+          // Get all text after the current cursor
           const textAfterCursor = _document.getText({
             start: currentPosition,
             end: { line: currentPosition.line, character: 9999 },
           })
-          // 获得当前光标前的文本
+          // Get all text before the current cursor
           const textBeforeCursor = _document.getText({
             start: { line: currentPosition.line, character: 0 },
             end: currentPosition,
           })
-          // 如果全是空格，那么就不需要替换
+          // If it is all spaces, then no replacement is required
           const needReplaceText = textBeforeCursor.replace(/\s/g, '').length > 0
-          // 是否多行文本
+          // Whether it is multiline text
           const isMultiline = text.includes('\n')
-          // 不以 copilot 的 range 为准，以当前光标位置为准
+          // Do not take the range of copilot as the standard, take the current cursor position as the standard
           const start = noInput ? currentPosition : range.start
           const end: Position = {
             line: range.end.line,
@@ -173,7 +170,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
           const displayText = text.replace(new RegExp(`^ +`), '')
 
-          // 移除开头连续的 offset 个字符
+          // Remove the first offset characters
           text =
             needReplaceText && noInput
               ? text.replace(new RegExp(`^.{${offset}}`), '')
@@ -191,8 +188,6 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
             preselect,
           })
         })
-
-        console.log(results)
 
         completionList = {
           items: results.slice(0, limit),
