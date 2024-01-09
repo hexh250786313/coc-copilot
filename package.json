@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -59,6 +59,17 @@
           "type": "boolean",
           "default": true,
           "description": "Whether to update the completion panel automatically when the copilot result is updated"
+        },
+        "copilot.triggerCharacters": {
+          "type": "array",
+          "default": [
+            ".",
+            "/",
+            "@",
+            " ",
+            "*"
+          ],
+          "description": "The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`)"
         }
       }
     }
