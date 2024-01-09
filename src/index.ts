@@ -27,48 +27,61 @@ type Copilot = {
   }>
 }
 
-function isPositionNotSame(
-  position: Position,
-  range: { start: Position; end: Position }
-): boolean {
-  return (
-    position.line !== range.end.line ||
-    position.character !== range.end.character
-  )
+let previousIds: string[] = []
+
+/** 是否存在新的 uuid */
+function hasNewIds(suggestions: Copilot['suggestions']) {
+  const ids = suggestions.map((suggestion) => suggestion.uuid)
+  return ids.some((id) => !previousIds.includes(id))
+}
+
+/** 结果是否匹配 input */
+function isMatch(input: string, suggestions: Copilot['suggestions']) {
+  const displayText = suggestions[0].displayText
+  const text = suggestions[0].text
+  return displayText + input === text
 }
 
 /** Polling to get variables until you get them or 5 seconds later */
 function getSuggestions(
   buffer: any,
-  autoUpdateCompletion: boolean
+  autoUpdateCompletion: boolean,
+  input: string
 ): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
     buffer.getVar('_copilot').then((copilot: Copilot | null) => {
-      if (Array.isArray(copilot?.suggestions) && copilot?.suggestions?.length) {
+      if (
+        Array.isArray(copilot?.suggestions) &&
+        copilot?.suggestions?.length &&
+        hasNewIds(copilot.suggestions) && // 如果存在新的 uuid，那么就更新
+        isMatch(input, copilot.suggestions)
+      ) {
         resolve(copilot!.suggestions)
-      } else {
-        if (autoUpdateCompletion) {
-          let timer: NodeJS.Timeout | null = null
-          const timeout = setTimeout(() => {
+        return
+      }
+      // 如果不存在新的 uuid，那么轮询查询
+      if (autoUpdateCompletion) {
+        let timer: NodeJS.Timeout | null = null
+        const timeout = setTimeout(() => {
+          clearInterval(timer!)
+          resolve([])
+        }, 5000)
+
+        timer = setInterval(async () => {
+          const copilot = (await buffer.getVar('_copilot')) as Copilot | null
+
+          if (
+            Array.isArray(copilot?.suggestions) &&
+            copilot?.suggestions?.length
+            // isMatch(input, copilot.suggestions)
+          ) {
+            clearTimeout(timeout)
             clearInterval(timer!)
-            resolve([])
-          }, 5000)
-
-          timer = setInterval(async () => {
-            const copilot = (await buffer.getVar('_copilot')) as Copilot | null
-
-            if (
-              Array.isArray(copilot?.suggestions) &&
-              copilot?.suggestions?.length
-            ) {
-              clearTimeout(timeout)
-              clearInterval(timer!)
-              resolve(copilot!.suggestions)
-            }
-          }, 500)
-        } else {
-          return resolve(null)
-        }
+            resolve(copilot!.suggestions)
+          }
+        }, 500)
+      } else {
+        return resolve(null)
       }
     })
   })
@@ -112,14 +125,21 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
       if (option) {
         const buffer = workspace.nvim.createBuffer(option.bufnr)
+        const input = option.input
 
-        const suggestions = await getSuggestions(buffer, autoUpdateCompletion)
+        const suggestions = await getSuggestions(
+          buffer,
+          autoUpdateCompletion,
+          input
+        )
 
         if (!suggestions || suggestions.length === 0) {
           return null
         }
 
-        const input = option.input
+        previousIds = suggestions.map((suggestion) => suggestion.uuid)
+
+        const noInput = input.length === 0
 
         suggestions.forEach(({ range, text }) => {
           const currentPosition: Position = _document.positionAt(
@@ -128,8 +148,11 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           // copilot 的原理是获取一整行，它会从光标行所在行的第一列开始替换
           // 获得当前偏移量：
           const offset = currentPosition.character - range.start.character
-          // 不以 copilot 的 range 为准，以当前光标位置为准
-          const start = currentPosition
+          // 获取当前光标后的所有文本
+          const textAfterCursor = _document.getText({
+            start: currentPosition,
+            end: { line: currentPosition.line, character: 9999 },
+          })
           // 获得当前光标前的文本
           const textBeforeCursor = _document.getText({
             start: { line: currentPosition.line, character: 0 },
@@ -137,27 +160,24 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           })
           // 如果全是空格，那么就不需要替换
           const needReplaceText = textBeforeCursor.replace(/\s/g, '').length > 0
+          // 是否多行文本
+          const isMultiline = text.includes('\n')
+          // 不以 copilot 的 range 为准，以当前光标位置为准
+          const start = noInput ? currentPosition : range.start
+          const end: Position = {
+            line: range.end.line,
+            character: isMultiline
+              ? range.end.character + textAfterCursor.length
+              : range.end.character,
+          }
 
           const displayText = text.replace(new RegExp(`^ +`), '')
 
           // 移除开头连续的 offset 个字符
           text =
-            needReplaceText && input.length === 0
+            needReplaceText && noInput
               ? text.replace(new RegExp(`^.{${offset}}`), '')
               : text
-
-          const end: Position = range.end
-
-          console.log({
-            start: range.start,
-            end: range.end,
-            currentPosition,
-            position,
-            input,
-            text,
-            offset,
-            textBeforeCursor,
-          })
 
           results.push({
             label: text.replace(/\n/g, '↵'),
@@ -171,6 +191,8 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
             preselect,
           })
         })
+
+        console.log(results)
 
         completionList = {
           items: results.slice(0, limit),
