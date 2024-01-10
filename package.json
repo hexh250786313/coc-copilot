@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -67,7 +67,8 @@
             "/",
             "@",
             " ",
-            "*"
+            "*",
+            "<"
           ],
           "description": "The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`)"
         }
