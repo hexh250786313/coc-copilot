@@ -51,8 +51,9 @@ function getSuggestions(
       if (
         Array.isArray(copilot?.suggestions) &&
         copilot?.suggestions?.length &&
-        hasNewIds(copilot.suggestions) && // if exist new uuid, then update
-        isMatch(input, copilot.suggestions)
+        ((hasNewIds(copilot.suggestions) && // if exist new uuid, then update
+          isMatch(input, copilot.suggestions)) ||
+          !autoUpdateCompletion)
       ) {
         resolve(copilot!.suggestions)
         return
@@ -99,6 +100,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
     '@',
     ' ',
     '*',
+    '<',
   ])
 
   if (!isEnable) {
@@ -168,7 +170,10 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
               : range.end.character,
           }
 
-          const displayText = text.replace(new RegExp(`^ +`), '')
+          let displayText = text.replace(new RegExp(`^ +`), '')
+
+          // escape "`"
+          displayText = displayText.replace(/`/g, '\\`')
 
           // Remove the first offset characters
           text =
@@ -191,7 +196,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
         completionList = {
           items: results.slice(0, limit),
-          isIncomplete: true,
+          isIncomplete: autoUpdateCompletion,
         }
       }
       return completionList
