@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -71,6 +71,16 @@
             "<"
           ],
           "description": "The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`)"
+        },
+        "copilot.keepCursorAfterCompletion": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to keep the content after the cursor. If it is true, the content after the cursor will be kept. If it is false, the content will be replaced according to the content of copilot. The default is false"
+        },
+        "copilot.timeout": {
+          "type": "integer",
+          "default": 5000,
+          "description": "coc-copilot uses polling to get results from copilot.vim. If there is no result after <timeout> ms, it is considered that copilot.vim did not return the result, and then the polling ends. The default is 5000ms that same as coc completion default timeout"
         }
       }
     }
