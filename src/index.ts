@@ -44,7 +44,8 @@ function isMatch(input: string, suggestions: Copilot['suggestions']) {
 function getSuggestions(
   buffer: any,
   autoUpdateCompletion: boolean,
-  input: string
+  input: string,
+  completionTimeout: number
 ): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
     buffer.getVar('_copilot').then((copilot: Copilot | null) => {
@@ -64,7 +65,7 @@ function getSuggestions(
         const timeout = setTimeout(() => {
           clearInterval(timer!)
           resolve([])
-        }, 5000)
+        }, completionTimeout)
 
         timer = setInterval(async () => {
           const copilot = (await buffer.getVar('_copilot')) as Copilot | null
@@ -102,6 +103,11 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
     '*',
     '<',
   ])
+  const keepCursorAfterCompletion = configuration.get(
+    'keepCursorAfterCompletion',
+    false
+  )
+  const timeout = configuration.get('timeout', 5000)
 
   if (!isEnable) {
     return
@@ -129,7 +135,8 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
         const suggestions = await getSuggestions(
           buffer,
           autoUpdateCompletion,
-          input
+          input,
+          timeout
         )
 
         if (!suggestions || suggestions.length === 0) {
@@ -147,11 +154,6 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           // The principle of copilot is to get a whole line, and it will start replacing from the first column of the line where the cursor line is located
           // Get the current offset:
           const offset = currentPosition.character - range.start.character
-          // Get all text after the current cursor
-          const textAfterCursor = _document.getText({
-            start: currentPosition,
-            end: { line: currentPosition.line, character: 9999 },
-          })
           // Get all text before the current cursor
           const textBeforeCursor = _document.getText({
             start: { line: currentPosition.line, character: 0 },
@@ -159,14 +161,12 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           })
           // If it is all spaces, then no replacement is required
           const needReplaceText = textBeforeCursor.replace(/\s/g, '').length > 0
-          // Whether it is multiline text
-          const isMultiline = text.includes('\n')
           // Do not take the range of copilot as the standard, take the current cursor position as the standard
           const start = noInput ? currentPosition : range.start
           const end: Position = {
             line: range.end.line,
-            character: isMultiline
-              ? range.end.character + textAfterCursor.length
+            character: keepCursorAfterCompletion
+              ? currentPosition.character
               : range.end.character,
           }
 
@@ -180,6 +180,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
             needReplaceText && noInput
               ? text.replace(new RegExp(`^.{${offset}}`), '')
               : text
+          text = noInput ? text.replace(new RegExp(`^ +`), '') : text
 
           results.push({
             label: text.replace(/\n/g, '↵'),

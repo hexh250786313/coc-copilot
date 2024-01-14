@@ -27,6 +27,7 @@ Then, install `@hexuhua/coc-copilot` using:
 Here are the available configuration options for coc-copilot:
 
 - `copilot.enable`: (Boolean, default: `true`) Enable or disable the coc-copilot extension.
+- `copilot.timeout`: (Integer, default: `5000`) coc-copilot uses polling to get results from `copilot.vim`. If there is no result after `<timeout>` ms, then the polling ends. The default is 5000ms that same as coc completion default timeout.
 - `copilot.priority`: (Integer, default: `1000`) The priority of Copilot completion items compared to other completion sources.
 - `copilot.limit`: (Integer, default: `10`) The maximum number of completion items fetched from Copilot.
 - `copilot.enablePreselect`: (Boolean, default: `true`) Enable or disable preselecting Copilot completion items.
@@ -34,6 +35,7 @@ Here are the available configuration options for coc-copilot:
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
 - `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
 - `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", " ", "*", "<"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
+- `copilot.keepCursorAfterCompletion`: (Boolean, default: `false`) Whether to keep the content after the cursor. If it is true, the content after the cursor will be kept. If it is false, the content will be replaced according to the content of copilot. The default is false.
 
 ## License
 
