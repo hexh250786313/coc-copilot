@@ -27,7 +27,7 @@ Then, install `@hexuhua/coc-copilot` using:
 Here are the available configuration options for coc-copilot:
 
 - `copilot.enable`: (Boolean, default: `true`) Enable or disable the coc-copilot extension.
-- `copilot.timeout`: (Integer, default: `5000`) coc-copilot uses polling to get results from `copilot.vim`. If there is no result after `<timeout>` ms, then the polling ends. The default is 5000ms that same as coc completion default timeout.
+- `copilot.timeout`: (Integer, default: `5000`) coc-copilot uses polling to get results from `copilot.vim`. If there is no result after `<timeout>` ms, then the polling ends. The value cannot be less than `500` because the interval of polling is `500ms`, and the default value is 5000ms, which is the same as the default timeout of coc completion.
 - `copilot.priority`: (Integer, default: `1000`) The priority of Copilot completion items compared to other completion sources.
 - `copilot.limit`: (Integer, default: `10`) The maximum number of completion items fetched from Copilot.
 - `copilot.enablePreselect`: (Boolean, default: `true`) Enable or disable preselecting Copilot completion items.
