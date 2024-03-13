@@ -40,6 +40,36 @@ function isMatch(input: string, suggestions: Copilot['suggestions']) {
   return displayText + input === text
 }
 
+async function registerRuntimepath(extensionPath: string) {
+  const { nvim } = workspace
+  const rtp = (await nvim.getOption('runtimepath')) as string
+  const paths = rtp.split(',')
+  if (!paths.includes(extensionPath)) {
+    await nvim.command(
+      `execute 'noa set rtp+='.fnameescape('${extensionPath.replace(
+        /'/g,
+        "''"
+      )}')`
+    )
+  }
+}
+
+async function fetchSuggestions(
+  buffer: any
+): Promise<Copilot['suggestions'] | null> {
+  let suggestions: Copilot['suggestions'] | null = null
+  if (workspace.isNvim) {
+    const copilot: Copilot | null = await buffer.getVar('_copilot')
+    if (copilot?.suggestions) {
+      suggestions = copilot.suggestions
+    }
+  }
+  if (workspace.isVim) {
+    suggestions = await workspace.nvim.call('coc_copilot#get_suggestions')
+  }
+  return suggestions
+}
+
 /** Polling to get variables until you get them or 5 seconds later */
 function getSuggestions(
   buffer: any,
@@ -48,15 +78,16 @@ function getSuggestions(
   completionTimeout: number
 ): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
-    buffer.getVar('_copilot').then((copilot: Copilot | null) => {
+    ;(async () => {
+      const suggestions = await fetchSuggestions(buffer)
       if (
-        Array.isArray(copilot?.suggestions) &&
-        copilot?.suggestions?.length &&
-        ((hasNewIds(copilot.suggestions) && // if exist new uuid, then update
-          isMatch(input, copilot.suggestions)) ||
+        Array.isArray(suggestions) &&
+        suggestions?.length &&
+        ((hasNewIds(suggestions) && // if exist new uuid, then update
+          isMatch(input, suggestions)) ||
           !autoUpdateCompletion)
       ) {
-        resolve(copilot!.suggestions)
+        resolve(suggestions)
         return
       }
       // if not exist new uuid, then polling
@@ -68,21 +99,18 @@ function getSuggestions(
         }, completionTimeout)
 
         timer = setInterval(async () => {
-          const copilot = (await buffer.getVar('_copilot')) as Copilot | null
+          const suggestions = await fetchSuggestions(buffer)
 
-          if (
-            Array.isArray(copilot?.suggestions) &&
-            copilot?.suggestions?.length
-          ) {
+          if (Array.isArray(suggestions) && suggestions?.length) {
             clearTimeout(timeout)
             clearInterval(timer!)
-            resolve(copilot!.suggestions)
+            resolve(suggestions)
           }
         }, 500)
       } else {
         return resolve(null)
       }
-    })
+    })()
   })
 }
 
@@ -112,6 +140,8 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   if (!isEnable) {
     return
   }
+
+  await registerRuntimepath(context.extensionPath)
 
   const languageProvider: CompletionItemProvider = {
     async provideCompletionItems(
@@ -197,7 +227,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
 
         completionList = {
           items: results.slice(0, limit),
-          isIncomplete: autoUpdateCompletion,
+          isIncomplete: !!autoUpdateCompletion,
         }
       }
       return completionList
