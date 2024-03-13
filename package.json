@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -15,7 +15,7 @@
     "*"
   ],
   "scripts": {
-    "release": "git checkout master -- ./README.md && cp ./build/index.js ./lib && rm -rf ./build"
+    "release": "git checkout master -- ./README.md ./autoload && cp ./build/index.js ./lib && rm -rf ./build"
   },
   "repository": "git@github.com:hexh250786313/coc-copilot.git",
   "author": "hexh <250786313@qq.com>",
