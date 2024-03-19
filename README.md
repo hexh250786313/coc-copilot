@@ -40,3 +40,9 @@ Here are the available configuration options for coc-copilot:
 ## License
 
 MIT License.
+
+## Q & A
+
+- **Q**: Sometimes the completion will cause nvim to freeze.
+
+- **A**: Possible related issue: https://github.com/neoclide/coc.nvim/issues/4877. This problem may occur in css or other language servers with automatic `triggerSuggest` functionality. If you are using coc-css, then the problem is caused by `css/less/scss.completion.triggerPropertyValueCompletion`, which is not a problem with coc-copilot. Any coc extension that asynchronously fetches completion results will cause this problem, and it needs to be fixed by the official coc. The temporary solution is to turn off `css/less/scss.completion.triggerPropertyValueCompletion` or other language servers with automatic `triggerSuggest` related functions.
