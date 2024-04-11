@@ -16,28 +16,17 @@ import {
 
 type Copilot = {
   suggestions: Array<{
-    displayText: string
-    position: { character: number; line: number }
+    insertText: string
     range: {
       start: { character: number; line: number }
       end: { character: number; line: number }
     }
-    text: string
-    uuid: string
+    command: {
+      arguments: any[]
+      title: string
+      command: string
+    }
   }>
-}
-
-let previousIds: string[] = []
-
-function hasNewIds(suggestions: Copilot['suggestions']) {
-  const ids = suggestions.map((suggestion) => suggestion.uuid)
-  return ids.some((id) => !previousIds.includes(id))
-}
-
-function isMatch(input: string, suggestions: Copilot['suggestions']) {
-  const displayText = suggestions[0].displayText
-  const text = suggestions[0].text
-  return displayText + input === text
 }
 
 async function registerRuntimepath(extensionPath: string) {
@@ -74,7 +63,7 @@ async function fetchSuggestions(
 function getSuggestions(
   buffer: any,
   autoUpdateCompletion: boolean,
-  input: string,
+  _input: string,
   completionTimeout: number
 ): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
@@ -83,14 +72,11 @@ function getSuggestions(
       if (
         Array.isArray(suggestions) &&
         suggestions?.length &&
-        ((hasNewIds(suggestions) && // if exist new uuid, then update
-          isMatch(input, suggestions)) ||
-          !autoUpdateCompletion)
+        !autoUpdateCompletion
       ) {
         resolve(suggestions)
         return
       }
-      // if not exist new uuid, then polling
       if (autoUpdateCompletion) {
         let timer: NodeJS.Timeout | null = null
         const timeout = setTimeout(() => {
@@ -173,11 +159,11 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           return null
         }
 
-        previousIds = suggestions.map((suggestion) => suggestion.uuid)
+        // previousIds = suggestions.map((suggestion) => suggestion.uuid)
 
         const noInput = input.length === 0
 
-        suggestions.forEach(({ range, text }) => {
+        suggestions.forEach(({ range, insertText }) => {
           const currentPosition: Position = _document.positionAt(
             _document.offsetAt(position)
           )
@@ -200,27 +186,29 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
               : range.end.character,
           }
 
-          let displayText = text.replace(new RegExp(`^ +`), '')
+          let displayText = insertText.replace(new RegExp(`^ +`), '')
 
           // escape "`"
           displayText = displayText.replace(/`/g, '\\`')
 
           // Remove the first offset characters
-          text =
+          insertText =
             needReplaceText && noInput
-              ? text.replace(new RegExp(`^.{${offset}}`), '')
-              : text
-          text = noInput ? text.replace(new RegExp(`^ +`), '') : text
+              ? insertText.replace(new RegExp(`^.{${offset}}`), '')
+              : insertText
+          insertText = noInput
+            ? insertText.replace(new RegExp(`^ +`), '')
+            : insertText
 
           results.push({
-            label: text.replace(/\n/g, '↵'),
+            label: insertText.replace(/\n/g, '↵'),
             kind: kindLabel as any,
             detail: '',
             documentation: {
               kind: MarkupKind.Markdown,
               value: `\`\`\`${filetype}\n${displayText}\n\`\`\``,
             },
-            textEdit: TextEdit.replace(Range.create(start, end), text),
+            textEdit: TextEdit.replace(Range.create(start, end), insertText),
             preselect,
           })
         })
