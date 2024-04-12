@@ -36,6 +36,7 @@ Here are the available configuration options for coc-copilot:
 - `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
 - `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", " ", "*", "<"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
 - `copilot.keepCursorAfterCompletion`: (Boolean, default: `false`) Whether to keep the content after the cursor. If it is true, the content after the cursor will be kept. If it is false, the content will be replaced according to the content of copilot. The default is false.
+- `copilot.showStatus`: (Boolean, default: `false`) Whether to show the status of fetching suggestions. The default is false.
 
 ## License
 
