@@ -113,6 +113,11 @@
           "type": "integer",
           "default": 5000,
           "description": "coc-copilot uses polling to get results from copilot.vim. If there is no result after <timeout> ms, it is considered that copilot.vim did not return the result, and then the polling ends. The default is 5000ms that same as coc completion default timeout"
+        },
+        "copilot.showStatus": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to show the status of fetching suggestions"
         }
       }
     }

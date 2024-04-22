@@ -12,6 +12,7 @@ import {
   Range,
   CompletionItemProvider,
   MarkupKind,
+  window,
 } from 'coc.nvim'
 import EventEmitter3 from 'eventemitter3'
 
@@ -113,6 +114,10 @@ function getSuggestions(
   })
 }
 
+const statusProvider = {
+  statusItem: window.createStatusBarItem(10, { progress: true }),
+}
+
 export const activate = async (context: ExtensionContext): Promise<void> => {
   const configuration = workspace.getConfiguration('copilot')
   const isEnable = configuration.get('enable', true)
@@ -135,12 +140,15 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
     false
   )
   const timeout = configuration.get('timeout', 5000)
+  const showStatus = configuration.get('showStatus', false)
 
   if (!isEnable) {
     return
   }
 
   await registerRuntimepath(context.extensionPath)
+  statusProvider.statusItem.text = 'Copilot: Fetching...'
+  statusProvider.statusItem.isProgress = true
 
   const languageProvider: CompletionItemProvider = {
     async provideCompletionItems(
@@ -168,6 +176,8 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           input,
           timeout
         )
+
+        if (showStatus) statusProvider.statusItem.hide()
 
         if (!suggestions || suggestions.length === 0) {
           return null
