@@ -12,8 +12,10 @@ import {
   Range,
   CompletionItemProvider,
   MarkupKind,
-  window,
 } from 'coc.nvim'
+import EventEmitter3 from 'eventemitter3'
+
+const ee = new EventEmitter3<'abort'>()
 
 type Copilot = {
   suggestions: Array<{
@@ -60,6 +62,9 @@ async function fetchSuggestions(
   return suggestions
 }
 
+let timer: NodeJS.Timeout | undefined = undefined
+let timeout: NodeJS.Timeout | undefined = undefined
+
 /** Polling to get variables until you get them or 5 seconds later */
 function getSuggestions(
   buffer: any,
@@ -68,6 +73,12 @@ function getSuggestions(
   completionTimeout: number
 ): Promise<Copilot['suggestions'] | null> {
   return new Promise((resolve) => {
+    function clearTimer() {
+      resolve(null)
+      clearTimeout(timeout)
+      clearInterval(timer)
+      ee.removeListener('abort', clearTimer)
+    }
     ;(async () => {
       const suggestions = await fetchSuggestions(buffer)
       if (
@@ -79,8 +90,7 @@ function getSuggestions(
         return
       }
       if (autoUpdateCompletion) {
-        let timer: NodeJS.Timeout | null = null
-        const timeout = setTimeout(() => {
+        timeout = setTimeout(() => {
           clearInterval(timer!)
           resolve([])
         }, completionTimeout)
@@ -90,19 +100,17 @@ function getSuggestions(
 
           if (Array.isArray(suggestions) && suggestions?.length) {
             clearTimeout(timeout)
-            clearInterval(timer!)
+            clearInterval(timer)
             resolve(suggestions)
           }
         }, 500)
+
+        ee.addListener('abort', clearTimer)
       } else {
         return resolve(null)
       }
     })()
   })
-}
-
-const statusProvider = {
-  statusItem: window.createStatusBarItem(10, { progress: true }),
 }
 
 export const activate = async (context: ExtensionContext): Promise<void> => {
@@ -127,15 +135,12 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
     false
   )
   const timeout = configuration.get('timeout', 5000)
-  const showStatus = configuration.get('showStatus', false)
 
   if (!isEnable) {
     return
   }
 
   await registerRuntimepath(context.extensionPath)
-  statusProvider.statusItem.text = 'Copilot: Fetching...'
-  statusProvider.statusItem.isProgress = true
 
   const languageProvider: CompletionItemProvider = {
     async provideCompletionItems(
@@ -156,16 +161,13 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
         const buffer = workspace.nvim.createBuffer(option.bufnr)
         const input = option.input
 
-        if (showStatus) statusProvider.statusItem.show()
-
+        ee.emit('abort')
         const suggestions = await getSuggestions(
           buffer,
           autoUpdateCompletion,
           input,
           timeout
         )
-
-        if (showStatus) statusProvider.statusItem.hide()
 
         if (!suggestions || suggestions.length === 0) {
           return null
