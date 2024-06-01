@@ -12,7 +12,6 @@ import {
   Range,
   CompletionItemProvider,
   MarkupKind,
-  window,
 } from 'coc.nvim'
 import EventEmitter3 from 'eventemitter3'
 
@@ -114,8 +113,23 @@ function getSuggestions(
   })
 }
 
-const statusProvider = {
-  statusItem: window.createStatusBarItem(10, { progress: true }),
+//
+// Determine the suggestion content returned by suggestion and the content before the current cursor
+// Divided into three levels:
+//
+// Match: the two are exactly the same
+// Partial match: the suggestion content contains the content before the current cursor (after removing the leading
+// spaces)
+// Mismatch: other situations
+//
+const getMatchLevel = (suggestion: string, currentLine: string) => {
+  if (suggestion.startsWith(currentLine)) {
+    return 'match'
+  }
+  if (suggestion.startsWith(currentLine.replace(/^ +/, ''))) {
+    return 'partial'
+  }
+  return 'mismatch'
 }
 
 export const activate = async (context: ExtensionContext): Promise<void> => {
@@ -135,20 +149,17 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
     '*',
     '<',
   ])
-  const keepCursorAfterCompletion = configuration.get(
-    'keepCursorAfterCompletion',
-    false
-  )
   const timeout = configuration.get('timeout', 5000)
-  const showStatus = configuration.get('showStatus', false)
+  const showRemainingText = configuration.get<boolean>(
+    'showRemainingText',
+    true
+  )
 
   if (!isEnable) {
     return
   }
 
   await registerRuntimepath(context.extensionPath)
-  statusProvider.statusItem.text = 'Copilot: Fetching...'
-  statusProvider.statusItem.isProgress = true
 
   const languageProvider: CompletionItemProvider = {
     async provideCompletionItems(
@@ -177,71 +188,179 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           timeout
         )
 
-        if (showStatus) statusProvider.statusItem.hide()
-
         if (!suggestions || suggestions.length === 0) {
           return null
         }
-
-        // previousIds = suggestions.map((suggestion) => suggestion.uuid)
-
-        const noInput = input.length === 0
 
         suggestions.forEach(({ range, insertText }) => {
           const currentPosition: Position = _document.positionAt(
             _document.offsetAt(position)
           )
-          // The principle of copilot is to get a whole line, and it will start replacing from the first column of the line where the cursor line is located
-          // Get the current offset:
-          const offset = currentPosition.character - range.start.character
-          // Get all text before the current cursor
+          //
+          // current column of the cursor
+          //
+          const currentCursorCol = currentPosition.character
+          //
+          // The position where the input pairing starts
+          //
+          // For example:
+          //
+          // The original line content is:
+          //
+          // abc
+          //
+          // Then after inserting "xyz", it becomes:
+          //
+          // abcxyz
+          //    ~~~      -> "xyz" is the newly inserted text, when "x" is entered, the completion panel will be refreshed
+          //
+          // Then completionStartsAt is the position where "x" is located, which is the place where the input text
+          // triggers the completion panel refresh
+          //
+          const completionStartsAt = currentCursorCol - input.length
+          //
+          // text before the cursor
+          //
           const textBeforeCursor = _document.getText({
             start: { line: currentPosition.line, character: 0 },
             end: currentPosition,
           })
-          // If it is all spaces, then no replacement is required
-          const needReplaceText = textBeforeCursor.replace(/\s/g, '').length > 0
-          // Do not take the range of copilot as the standard, take the current cursor position as the standard
-          const start = noInput ? currentPosition : range.start
+          const matchLevel = getMatchLevel(insertText, textBeforeCursor)
+
+          if (matchLevel === 'mismatch') return
+          //
+          // Text offset
+          // When the pairing level is partial, it means the following situation occurs
+          //
+          //       |(trigger completion at this position)
+          // ~~~~~~                                -> all the spaces in front are entered, and then the completion is triggered
+          //
+          // At this time, the suggestion will automatically filter out all spaces, for example, "hello, world" is
+          // returned instead of "      hello, world"
+          // Therefore, the offset represents the number of these spaces
+          //
+          let offset = 0
+          switch (matchLevel) {
+            default:
+            case 'match': {
+              offset = 0
+              break
+            }
+            case 'partial': {
+              offset = currentCursorCol - range.start.character
+              break
+            }
+          }
+          //
+          // When the pairing level is partial, use the column where the current cursor is located as the starting position
+          // of the replacement text
+          // When the pairing level is match, use the default position returned by copilot
+          // This is to solve the following situation:
+          //
+          //     |(trigger completion at this position)
+          // ~~~~                               -> all the spaces in front are entered, and then the completion is triggered
+          //
+          // At this time, if you use the default position returned by copilot, it will be replaced from the first
+          // column of the line, for example:
+          //
+          // hello, world
+          // |
+          // The spaces entered by the user are deleted
+          //
+          // But in principle, the column where the current cursor is located should be used as the starting position
+          // of the replacement, for example:
+          //
+          //     hello, world
+          // ~~~~                               -> The spaces entered by the user should be retained
+          //
+          const start = matchLevel === 'partial' ? currentPosition : range.start
           const end: Position = {
             line: range.end.line,
-            character: keepCursorAfterCompletion
-              ? currentPosition.character
-              : range.end.character,
+            character: range.end.character,
           }
 
-          let displayText = insertText.replace(new RegExp(`^ +`), '')
+          //
+          // First remove all spaces and line breaks at the beginning
+          // Then remove the first col characters of the first line of insertText, if the first line does not have so
+          // many characters, do not process
+          //
+          const displayText = insertText
+            .split('\n')
+            .map((line, index) => {
+              if (index === 0) {
+                return line.slice(completionStartsAt - offset)
+              }
+              return line
+            })
+            .join('\n')
+            .replace(/(\n( ){2,})/g, '↵ ')
+            .replace(/\n/g, '↵')
+            .replace(/^ +/, '')
 
-          // escape "`"
-          displayText = displayText.replace(/`/g, '\\`')
+          //
+          // Calculate the number of spaces at the beginning of each line of insertText
+          // Then remove the number of spaces of the line with the least spaces
+          // Then assign it to documentText
+          //
+          const minimumSpaces = insertText
+            .split('\n')
+            .map((line) => {
+              return line.match(/^( +)/)?.[0].length || 0
+            })
+            .reduce((a, b) => Math.min(a, b), Infinity)
+          let documentText = insertText
+            .split('\n')
+            .map((line) => {
+              return line.replace(new RegExp(`^ {${minimumSpaces}}`), '')
+            })
+            .join('\n')
 
-          // Remove the first offset characters
+          //
+          // Remove all characters matched from the beginning of the first column of documentText to
+          // currentCursorCol
+          //
+          let firstLine = insertText.split('\n')[0]
+          if (showRemainingText) {
+            firstLine = firstLine
+              .replace(new RegExp(`^.{${currentCursorCol - offset}}`), '')
+              .replace(/^ +/, '')
+          } else {
+            firstLine = ''
+          }
+          firstLine = firstLine
+            ? `\`\`\`txt\n${firstLine}\n\`\`\`\n***\n\``
+            : ''
+          documentText =
+            firstLine + `\`\`\`${filetype}\n${documentText}\n\`\`\``
+
           insertText =
-            needReplaceText && noInput
-              ? insertText.replace(new RegExp(`^.{${offset}}`), '')
+            matchLevel === 'partial'
+              ? insertText.replace(new RegExp(`^ +`), '')
               : insertText
-          insertText = noInput
-            ? insertText.replace(new RegExp(`^ +`), '')
-            : insertText
 
           results.push({
-            label: insertText.replace(/\n/g, '↵'),
+            label: displayText,
             kind: kindLabel as any,
             detail: '',
             documentation: {
               kind: MarkupKind.Markdown,
-              value: `\`\`\`${filetype}\n${displayText}\n\`\`\``,
+              value: `${documentText}`,
             },
             textEdit: TextEdit.replace(Range.create(start, end), insertText),
             preselect,
           })
         })
 
+        if (!results.length) {
+          return null
+        }
+
         completionList = {
           items: results.slice(0, limit),
           isIncomplete: !!autoUpdateCompletion,
         }
       }
+
       return completionList
     },
   }
