@@ -117,8 +117,8 @@ function getSuggestions(
 // Determine the suggestion content returned by suggestion and the content before the current cursor
 // Divided into three levels:
 //
-// Match: the two are exactly the same
-// Partial match: the suggestion content contains the content before the current cursor (after removing the leading
+// Match: suggestion starts with currentLine
+// Partial match: the suggestion content starts with the content before the current cursor (after removing the leading
 // spaces)
 // Mismatch: other situations
 //
@@ -225,7 +225,18 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
             start: { line: currentPosition.line, character: 0 },
             end: currentPosition,
           })
-          const matchLevel = getMatchLevel(insertText, textBeforeCursor)
+          const noInput = input.length === 0 && textBeforeCursor.trim() === ''
+          let matchLevel = getMatchLevel(insertText, textBeforeCursor)
+
+          //
+          // This situation is:
+          //
+          //     |
+          // ~~~~                    -> No input, but spaces are entered in front, and the completion is triggered directly
+          //
+          // At this time, the matchLevel should be partial
+          //
+          if (noInput) matchLevel = 'partial'
 
           if (matchLevel === 'mismatch') return
           //
