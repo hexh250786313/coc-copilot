@@ -179,6 +179,28 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
       if (option) {
         const buffer = workspace.nvim.createBuffer(option.bufnr)
         const input = option.input
+        console.log('重新触发 coc-copilot', option.input)
+        console.log('coc-copilot option', option)
+        const triggerForTriggerCharacter =
+          !option.input && triggerCharacters.includes(option.triggerCharacter)
+        if (
+          autoUpdateCompletion &&
+          !option.triggerForInComplete &&
+          !triggerForTriggerCharacter
+        ) {
+          return {
+            items: [{}],
+            // items: [
+            //   // {
+            //   //   label: 'Fetching suggestions...',
+            //   //   kind: kindLabel as any,
+            //   //   detail: '',
+            //   //   preselect: false,
+            //   // },
+            // ],
+            isIncomplete: true,
+          }
+        }
 
         ee.emit('abort')
         const suggestions = await getSuggestions(
@@ -372,6 +394,11 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
         }
       }
 
+      console.log('返回 coc-copilot 结果', { results, input: option?.input })
+      console.log('ee 的注册监听事件和绑定到事件上的方法', {
+        listeners: ee.listeners('abort'),
+        eventNames: ee.eventNames(),
+      })
       return completionList
     },
   }
