@@ -47,6 +47,8 @@ MIT License.
 
 - **A**: It shows the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
 
+   ![2024-06-11_19-49](https://github.com/hexh250786313/coc-copilot/assets/26080416/628a50d9-eef0-4bfe-939d-e7d94d2d7d56)
+
 - **Q**: The panel updates very slowly during input, and sometimes even freezes.
 
 - **A**: Limitations of the coc.nvim itself. See: [Asynchronous Completion for isIncomplete Items in coc.nvim #5028](https://github.com/neoclide/coc.nvim/issues/5028)
