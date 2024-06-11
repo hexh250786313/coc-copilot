@@ -35,7 +35,7 @@ Here are the available configuration options for coc-copilot:
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
 - `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
 - `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", " ", "*", "<"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
-- `copilot.keepCursorAfterCompletion`: (Boolean, default: `false`) Whether to keep the content after the cursor. If it is true, the content after the cursor will be kept. If it is false, the content will be replaced according to the content of copilot. The default is false.
+- `copilot.showRemainingText`: (Boolean, default: `true`) Whether to show the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
 
 ## License
 
@@ -43,6 +43,12 @@ MIT License.
 
 ## Q & A
 
-- **Q**: Sometimes the completion will cause nvim to freeze.
+- **Q**: What `copilot.showRemainingText` does?
 
-- **A**: Possible related issue: https://github.com/neoclide/coc.nvim/issues/4877. This problem may occur in css or other language servers with automatic `triggerSuggest` functionality. If you are using coc-css, then the problem is caused by `css/less/scss.completion.triggerPropertyValueCompletion`, which is not a problem with coc-copilot. Any coc extension that asynchronously fetches completion results will cause this problem, and it needs to be fixed by the official coc. The temporary solution is to turn off `css/less/scss.completion.triggerPropertyValueCompletion` or other language servers with automatic `triggerSuggest` related functions.
+- **A**: It shows the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
+
+   ![2024-06-11_19-49](https://github.com/hexh250786313/coc-copilot/assets/26080416/628a50d9-eef0-4bfe-939d-e7d94d2d7d56)
+
+- **Q**: The panel updates very slowly during input, and sometimes even freezes.
+
+- **A**: Limitations of the coc.nvim itself. See: [Asynchronous Completion for isIncomplete Items in coc.nvim #5028](https://github.com/neoclide/coc.nvim/issues/5028)
