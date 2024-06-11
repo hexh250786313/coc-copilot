@@ -43,6 +43,10 @@ MIT License.
 
 ## Q & A
 
-- **Q**: Sometimes the completion will cause nvim to freeze.
+- **Q**: What `copilot.showRemainingText` does?
 
-- **A**: Possible related issue: https://github.com/neoclide/coc.nvim/issues/4877. This problem may occur in css or other language servers with automatic `triggerSuggest` functionality. If you are using coc-css, then the problem is caused by `css/less/scss.completion.triggerPropertyValueCompletion`, which is not a problem with coc-copilot. Any coc extension that asynchronously fetches completion results will cause this problem, and it needs to be fixed by the official coc. The temporary solution is to turn off `css/less/scss.completion.triggerPropertyValueCompletion` or other language servers with automatic `triggerSuggest` related functions.
+- **A**: It shows the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
+
+- **Q**: The panel updates very slowly during input, and sometimes even freezes.
+
+- **A**: Limitations of the coc.nvim itself. See: [Asynchronous Completion for isIncomplete Items in coc.nvim #5028](https://github.com/neoclide/coc.nvim/issues/5028)

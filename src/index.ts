@@ -171,10 +171,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
       const { option } = context
       let completionList: CompletionList | null = null
       const results: CompletionItem[] = []
-      const filetype = (await workspace.nvim.call('getbufvar', [
-        '',
-        '&filetype',
-      ])) as string
+      const filetype = option?.filetype
 
       if (option) {
         const buffer = workspace.nvim.createBuffer(option.bufnr)
@@ -377,14 +374,15 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   }
 
   context.subscriptions.push(
-    languages.registerCompletionItemProvider(
+    (languages.registerCompletionItemProvider as any)(
       'copilot', // name
       shortcut, // shortcut
       null, // selector / filetypes
       languageProvider, // provider
       triggerCharacters, // triggerCharacters
-      priority // priority,
-      // allCommitCharacters: string[]
+      priority, // priority,
+      undefined, // allCommitCharacters: string[]
+      !!autoUpdateCompletion // isIncompleteSource
     )
   )
 }
