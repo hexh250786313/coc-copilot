@@ -1,6 +1,6 @@
 # @hexuhua/coc-copilot
 
-![20230514_161921](https://github.com/hexh250786313/coc-copilot/assets/26080416/b3b2405c-7589-4030-95e8-ae88e9855df7)
+https://github.com/hexh250786313/coc-copilot/assets/26080416/5f8fa5cb-3c42-4d2d-9d72-4cc6c4a5c99c
 
 **@hexuhua/coc-copilot** is a [coc.nvim](https://github.com/neoclide/coc.nvim) extension that integrates with GitHub's [copilot.vim](https://github.com/github/copilot.vim) to provide AI-powered code completions for your projects.
 
@@ -34,7 +34,7 @@ Here are the available configuration options for coc-copilot:
 - `copilot.kindLabel`: (String, default: `" "`) The label used for Copilot completions in the completion menu.
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
 - `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
-- `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", " ", "*", "<"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
+- `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", "*", "<"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
 - `copilot.showRemainingText`: (Boolean, default: `true`) Whether to show the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
 
 ## License
@@ -47,7 +47,7 @@ MIT License.
 
 - **A**: It shows the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
 
-   ![2024-06-11_19-49](https://github.com/hexh250786313/coc-copilot/assets/26080416/628a50d9-eef0-4bfe-939d-e7d94d2d7d56)
+  ![2024-06-11_19-49](https://github.com/hexh250786313/coc-copilot/assets/26080416/628a50d9-eef0-4bfe-939d-e7d94d2d7d56)
 
 - **Q**: The panel updates very slowly during input, and sometimes even freezes.
 

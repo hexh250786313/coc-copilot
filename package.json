@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -66,7 +66,6 @@
             ".",
             "/",
             "@",
-            " ",
             "*",
             "<"
           ],
