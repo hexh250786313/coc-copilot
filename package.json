@@ -32,7 +32,7 @@
   },
   "repository": "git@github.com:hexh250786313/coc-copilot.git",
   "author": "hexh <250786313@qq.com>",
-  "license": "MIT",
+  "license": "Anti-996",
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.2",
     "@types/node": "^20.1.3",

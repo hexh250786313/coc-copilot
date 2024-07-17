@@ -22,6 +22,16 @@ Then, install `@hexuhua/coc-copilot` using:
 :CocInstall @hexuhua/coc-copilot
 ```
 
+## Usage
+
+Now coc-copilot doesn't support auto-updating completion panel. You need to update completions manually by `coc#refresh()`:
+
+```vim
+inoremap <silent><expr><c-l> coc#refresh()
+```
+
+That is because asynchronous completion makes coc completion panel update slowly. See: [Asynchronous Completion for isIncomplete Items in coc.nvim #5028](https://github.com/neoclide/coc.nvim/issues/5028)
+
 ## Configuration
 
 Here are the available configuration options for coc-copilot:
