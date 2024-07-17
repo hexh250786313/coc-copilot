@@ -87,11 +87,6 @@
           "default": "Cop",
           "description": "Copilot shortcut"
         },
-        "copilot.autoUpdateCompletion": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to update the completion panel automatically when the copilot result is updated"
-        },
         "copilot.triggerCharacters": {
           "type": "array",
           "default": [

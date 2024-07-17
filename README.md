@@ -33,9 +33,9 @@ Here are the available configuration options for coc-copilot:
 - `copilot.enablePreselect`: (Boolean, default: `true`) Enable or disable preselecting Copilot completion items.
 - `copilot.kindLabel`: (String, default: `" "`) The label used for Copilot completions in the completion menu.
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
-- `copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.
 - `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", "*", "<"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
 - `copilot.showRemainingText`: (Boolean, default: `true`) Whether to show the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
+- ~~`copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.~~ **Deprecated: Now coc-copilot no longer updates the completion panel automatically because asynchronous completion makes coc completion panel update slowly.** See: [Asynchronous Completion for isIncomplete Items in coc.nvim #5028](https://github.com/neoclide/coc.nvim/issues/5028)
 
 ## License
 
@@ -48,7 +48,3 @@ MIT License.
 - **A**: It shows the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
 
   ![2024-06-11_19-49](https://github.com/hexh250786313/coc-copilot/assets/26080416/628a50d9-eef0-4bfe-939d-e7d94d2d7d56)
-
-- **Q**: The panel updates very slowly during input, and sometimes even freezes.
-
-- **A**: Limitations of the coc.nvim itself. See: [Asynchronous Completion for isIncomplete Items in coc.nvim #5028](https://github.com/neoclide/coc.nvim/issues/5028)

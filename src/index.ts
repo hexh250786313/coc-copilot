@@ -140,7 +140,8 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   const limit = configuration.get<number>('limit', 10)
   const preselect = configuration.get<boolean>('enablePreselect', true)
   const shortcut = configuration.get('shortcut', 'Cop')
-  const autoUpdateCompletion = configuration.get('autoUpdateCompletion', true)
+  // const autoUpdateCompletion = configuration.get('autoUpdateCompletion', true)
+  const autoUpdateCompletion = false
   const triggerCharacters = configuration.get('triggerCharacters', [
     '.',
     '/',
