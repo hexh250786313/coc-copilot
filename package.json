@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -19,7 +19,7 @@
   },
   "repository": "git@github.com:hexh250786313/coc-copilot.git",
   "author": "hexh <250786313@qq.com>",
-  "license": "MIT",
+  "license": "Anti-996",
   "contributes": {
     "configuration": {
       "type": "object",
@@ -54,11 +54,6 @@
           "type": "string",
           "default": "Cop",
           "description": "Copilot shortcut"
-        },
-        "copilot.autoUpdateCompletion": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to update the completion panel automatically when the copilot result is updated"
         },
         "copilot.triggerCharacters": {
           "type": "array",
