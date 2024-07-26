@@ -43,7 +43,6 @@ Here are the available configuration options for coc-copilot:
 - `copilot.enablePreselect`: (Boolean, default: `true`) Enable or disable preselecting Copilot completion items.
 - `copilot.kindLabel`: (String, default: `" "`) The label used for Copilot completions in the completion menu.
 - `copilot.shortcut`: (String, default: `"Cop"`) The shortcut used for Copilot completions in the completion menu.
-- `copilot.triggerCharacters`: (Array, default: `[".", "/", "@", "*", "<"]`) The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`).
 - `copilot.showRemainingText`: (Boolean, default: `true`) Whether to show the remaining text after the completion item in the completion menu. For some languages such as markdown, there is often a lot of text in one line, which can be helpful.
 - ~~`copilot.autoUpdateCompletion`: (Boolean, default: `true`) Whether to update the completion panel automatically when the copilot result is updated.~~ **Deprecated: Now coc-copilot no longer updates the completion panel automatically because asynchronous completion makes coc completion panel update slowly.** See: [Asynchronous Completion for isIncomplete Items in coc.nvim #5028](https://github.com/neoclide/coc.nvim/issues/5028)
 
