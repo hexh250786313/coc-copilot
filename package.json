@@ -1,6 +1,6 @@
 {
   "name": "@hexuhua/coc-copilot",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "copilot.vim completion source integration of coc.nvim",
   "main": "lib/index.js",
   "engines": {
@@ -54,17 +54,6 @@
           "type": "string",
           "default": "Cop",
           "description": "Copilot shortcut"
-        },
-        "copilot.triggerCharacters": {
-          "type": "array",
-          "default": [
-            ".",
-            "/",
-            "@",
-            "*",
-            "<"
-          ],
-          "description": "The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`)"
         },
         "copilot.timeout": {
           "type": "integer",
