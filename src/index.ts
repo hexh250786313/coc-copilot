@@ -141,7 +141,15 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
   const preselect = configuration.get<boolean>('enablePreselect', true)
   const shortcut = configuration.get('shortcut', 'Cop')
   // const autoUpdateCompletion = configuration.get('autoUpdateCompletion', true)
+  // const triggerCharacters = configuration.get('triggerCharacters', [
+  //   '.',
+  //   '/',
+  //   '@',
+  //   '*',
+  //   '<',
+  // ])
   const autoUpdateCompletion = false
+  const triggerCharacters = []
   const timeout = configuration.get('timeout', 5000)
   const showRemainingText = configuration.get<boolean>(
     'showRemainingText',
@@ -372,7 +380,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
       shortcut, // shortcut
       null, // selector / filetypes
       languageProvider, // provider
-      [], // triggerCharacters
+      triggerCharacters, // triggerCharacters
       priority, // priority,
       undefined, // allCommitCharacters: string[]
       !!autoUpdateCompletion // isIncompleteSource
