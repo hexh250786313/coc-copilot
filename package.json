@@ -87,17 +87,6 @@
           "default": "Cop",
           "description": "Copilot shortcut"
         },
-        "copilot.triggerCharacters": {
-          "type": "array",
-          "default": [
-            ".",
-            "/",
-            "@",
-            "*",
-            "<"
-          ],
-          "description": "The characters that trigger copilot completions. If not set, some characters will not trigger copilot completions (such as `.@/`)"
-        },
         "copilot.timeout": {
           "type": "integer",
           "default": 5000,
