@@ -62,6 +62,14 @@ async function fetchSuggestions(
   return suggestions
 }
 
+function commonPrefixLength(str1: string, str2: string): number {
+  let i = 0
+  while (i < str1.length && i < str2.length && str1[i] === str2[i]) {
+    i++
+  }
+  return i
+}
+
 let timer: NodeJS.Timeout | undefined = undefined
 let timeout: NodeJS.Timeout | undefined = undefined
 
@@ -285,7 +293,7 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           const start = matchLevel === 'partial' ? currentPosition : range.start
           const end: Position = {
             line: range.end.line,
-            character: range.end.character,
+            character: range.end.character + 3, // add 3 for the differences in line character counting between coc and copilot
           }
 
           //
@@ -346,6 +354,14 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
             matchLevel === 'partial'
               ? insertText.replace(new RegExp(`^ +`), '')
               : insertText
+          if (option.input.length === 0) {
+            const samePrefixLength = commonPrefixLength(insertText, option.line)
+            // Calculate the same redundant part at the beginning of the current line and the suggestion text, and then delete
+            if (samePrefixLength > 0) {
+              insertText = insertText.slice(samePrefixLength)
+              start.character = samePrefixLength
+            }
+          }
 
           results.push({
             label: displayText,
