@@ -293,7 +293,11 @@ export const activate = async (context: ExtensionContext): Promise<void> => {
           const start = matchLevel === 'partial' ? currentPosition : range.start
           const end: Position = {
             line: range.end.line,
-            character: range.end.character + 3, // add 3 for the differences in line character counting between coc and copilot
+            character:
+              currentPosition.line === range.end.line
+                ? (_document as any).lines[currentPosition.line]?.length
+                : range.end.character +
+                  3 /** add 3 for the differences in line character counting between coc and copilot */,
           }
 
           //
